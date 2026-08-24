@@ -289,12 +289,17 @@ function fillDeckSelect(){
   if(activeDeckId&&getDeck(activeDeckId))s.value=activeDeckId;
 }
 function createDeck(){
-  const name=$('#deckName').value.trim();
+  const input=$('#deckName');
+  const name=input?input.value.trim():'';
   if(!name){toast('단어장 이름을 입력해줘');return}
-  const d={id:makeId(),name,cards:[]};
-  decks.push(d);activeDeckId=d.id;saveDecks();
-  $('#deckName').value='';$('#deckModal').classList.remove('show');
+  const d={id:makeId(),name:name,cards:[]};
+  decks.push(d);
+  activeDeckId=d.id;
+  saveDecks();
+  if(input)input.value='';
+  const modal=$('#deckModal'); if(modal)modal.classList.remove('show');
   toast('단어장을 만들었어');
+  openDeck(d.id);
 }
 function deleteDeck(id){
   const d=getDeck(id);if(!d)return;
@@ -316,22 +321,34 @@ function showDeckHome(){
   renderDeckHome();
 }
 function openVocabModal(deckId){
-  if(!decks.length){$('#deckModal').classList.add('show');toast('먼저 단어장을 만들어줘');return}
-  if(deckId)activeDeckId=deckId;
+  if(!decks.length){
+    const dm=$('#deckModal'); if(dm)dm.classList.add('show');
+    toast('먼저 단어장을 만들어줘');
+    return;
+  }
+  if(deckId && getDeck(deckId))activeDeckId=deckId;
+  if(!activeDeckId || !getDeck(activeDeckId))activeDeckId=decks[0].id;
   fillDeckSelect();
-  if(activeDeckId&&getDeck(activeDeckId))$('#vocabDeck').value=activeDeckId;
-  $('#vocabPrompt').value='';$('#vocabAnswer').value='';$('#vocabNote').value='';
-  $('#vocabModal').classList.add('show');
+  const sel=$('#vocabDeck'); if(sel)sel.value=activeDeckId;
+  const p=$('#vocabPrompt'),a=$('#vocabAnswer'),n=$('#vocabNote');
+  if(p)p.value='';if(a)a.value='';if(n)n.value='';
+  const vm=$('#vocabModal'); if(vm)vm.classList.add('show');
 }
 function addVocabCard(){
-  const id=$('#vocabDeck').value, d=getDeck(id);
-  const prompt=$('#vocabPrompt').value.trim(), answer=$('#vocabAnswer').value.trim(), note=$('#vocabNote').value.trim();
+  const sel=$('#vocabDeck');
+  const id=sel?sel.value:activeDeckId;
+  const d=getDeck(id);
+  const p=$('#vocabPrompt'),a=$('#vocabAnswer'),n=$('#vocabNote');
+  const prompt=p?p.value.trim():'', answer=a?a.value.trim():'', note=n?n.value.trim():'';
   if(!d){toast('단어장을 선택해줘');return}
   if(!prompt||!answer){toast('문제/단어와 정답을 입력해줘');return}
   d.cards=d.cards||[];
-  d.cards.push({id:makeId(),prompt,answer,note,createdAt:Date.now()});
-  activeDeckId=id;saveDecks();$('#vocabModal').classList.remove('show');
-  openDeck(id);toast('카드를 저장했어');
+  d.cards.push({id:makeId(),prompt:prompt,answer:answer,note:note,createdAt:Date.now()});
+  activeDeckId=id;
+  saveDecks();
+  const vm=$('#vocabModal');if(vm)vm.classList.remove('show');
+  openDeck(id);
+  toast('카드를 저장했어');
 }
 function renderVocabList(){
   const d=getDeck(activeDeckId), box=$('#vocabList');if(!d||!box)return;
@@ -553,19 +570,40 @@ $('#bankCancel').onclick=()=>$('#bankModal').classList.remove('show');
 $('#bankSave').onclick=saveBankEntry;
 $('#manualSave').onclick=()=>{const ch=$('#manualChar').value.trim(),meaning=$('#manualMeaning').value.trim(),reading=$('#manualReading').value.trim(),grade=$('#manualGrade').value;if(!ch||!meaning||!reading){toast('한자·뜻·음을 모두 입력해줘');return}add({char:ch,meaning,reading,grade:grade||GRADE[ch]||'',source:'직접 추가'});$('#manualModal').classList.remove('show')};
 
-$('#newDeckBtn').onclick=()=>$('#deckModal').classList.add('show');
-$('#newVocabBtn').onclick=()=>openVocabModal(activeDeckId);
-$('#deckCancel').onclick=()=>$('#deckModal').classList.remove('show');
-$('#deckSave').onclick=createDeck;
-$('#vocabCancel').onclick=()=>$('#vocabModal').classList.remove('show');
-$('#vocabSave').onclick=addVocabCard;
-$('#backDeckHome').onclick=showDeckHome;
-$('#addHereBtn').onclick=()=>openVocabModal(activeDeckId);
-$('#testHereBtn').onclick=()=>startDeckTest(activeDeckId);
-$('#exitDeckTest').onclick=()=>openDeck(activeDeckId);
-$('#deckReveal').onclick=()=>{if(deckCurrent)$('#deckTestAnswer').classList.add('show')};
-$('#deckNext').onclick=nextDeckCard;
-$('#restartDeckTest').onclick=()=>startDeckTest(activeDeckId);
+
+
+function initDeckUI(){
+  const bind=(sel,fn)=>{const el=$(sel);if(el)el.onclick=fn};
+
+  bind('#newDeckBtn',()=>$('#deckModal').classList.add('show'));
+  bind('#newVocabBtn',()=>openVocabModal(activeDeckId));
+  bind('#deckCancel',()=>$('#deckModal').classList.remove('show'));
+  bind('#deckSave',createDeck);
+  bind('#vocabCancel',()=>$('#vocabModal').classList.remove('show'));
+  bind('#vocabSave',addVocabCard);
+  bind('#backDeckHome',showDeckHome);
+  bind('#addHereBtn',()=>openVocabModal(activeDeckId));
+  bind('#testHereBtn',()=>startDeckTest(activeDeckId));
+  bind('#exitDeckTest',()=>openDeck(activeDeckId));
+  bind('#deckReveal',()=>{if(deckCurrent)$('#deckTestAnswer').classList.add('show')});
+  bind('#deckNext',nextDeckCard);
+  bind('#restartDeckTest',()=>startDeckTest(activeDeckId));
+
+  // Deck page nav works independently of the older nav handler.
+  document.querySelectorAll('.nav button').forEach(btn=>{
+    if(btn.dataset.page==='deckPage'){
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+        const pg=$('#deckPage'); if(pg)pg.classList.add('active');
+        showDeckHome();
+      });
+    }
+  });
+
+  renderDeckHome();
+}
 
 function dictionaryLoaded(){
   externalReady=typeof hanjaDic!=='undefined';
@@ -573,7 +611,7 @@ function dictionaryLoaded(){
   if(externalReady){el.textContent='✓ 업로드 자료 + 보조 사전 연결 완료';el.className='statusLine ok';renderSearch()}
   else{el.textContent='보조 사전을 불러오지 못했어. 업로드 자료 검색은 가능해.';el.className='statusLine warn'}
 }
-counts();renderLibrary();renderDeckHome();renderBookmarks();updateReviewProgress();
+counts();renderLibrary();initDeckUI();renderDeckHome();renderBookmarks();updateReviewProgress();
 </script>
 <script src="https://cdn.jsdelivr.net/gh/myungcheol/hanja@master/hanjaDic.js" onload="dictionaryLoaded()" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/myungcheol/hanja/refs/heads/master/hanjaDic.js';"></script>
 <script>setTimeout(dictionaryLoaded,4000)</script>
