@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="조로아 한자장">
-<title>조로아 한자장 v7</title>
+<title>조로아 한자장 v8</title>
 <style>
 :root{--ink:#2e2732;--muted:#817985;--line:#e4dce4;--red:#d76470;--cyan:#22b7cf;--dark:#3a3240;--paper:#fffdf9}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -338,6 +338,65 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
   box-shadow:0 5px 15px rgba(57,42,53,.035)!important;
 }
 
+
+/* v8 카드 추가용 검색 UI - 메인 검색 탭과 동일한 흐름 */
+.builderBox{
+  margin:14px 0 10px!important;
+  padding:14px!important;
+  border:1px solid #e9e0e5!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  box-shadow:0 7px 22px rgba(57,42,53,.045)!important
+}
+.builderTitle{font-size:15px!important;font-weight:950!important;margin-bottom:4px!important}
+.builderHelp{font-size:11px!important;color:#867d87!important;line-height:1.5!important;margin-bottom:11px!important}
+.builderSearchRow{display:flex!important;gap:7px!important}
+.builderSearchRow input{
+  flex:1!important;min-width:0!important;border:1.5px solid #dcd3dc!important;
+  border-radius:13px!important;padding:11px 12px!important;background:#fff!important;font-size:15px!important
+}
+.builderSearchRow button{
+  border:0!important;border-radius:13px!important;background:#352e3a!important;
+  color:white!important;font-weight:950!important;padding:0 14px!important
+}
+.builderFilters{display:flex;gap:6px;overflow-x:auto;margin-top:9px;scrollbar-width:none}
+.builderFilters::-webkit-scrollbar{display:none}
+.builderFilter{
+  flex:0 0 auto;border:0;border-radius:999px;padding:7px 10px;background:#f1edef;
+  font-size:11px;font-weight:900;color:#5f5660
+}
+.builderFilter.active{background:#4a414e;color:#fff}
+.builderFilter.grade.active{background:#a85765;color:#fff}
+.builderResultList{display:flex;flex-direction:column;gap:7px;margin-top:11px;max-height:330px;overflow:auto;padding-right:2px}
+.builderResultCard{
+  display:grid;grid-template-columns:54px 1fr 48px;gap:9px;align-items:center;
+  background:#fbf9fa;border:1px solid #e8dfe4;border-radius:14px;padding:9px 10px
+}
+.builderResultCard .bc{
+  font-family:"Songti SC","STSong","Noto Serif CJK KR",serif;
+  font-size:34px;font-weight:700;text-align:center
+}
+.builderResultCard .bi b{display:block;font-size:13px}
+.builderResultCard .bi small{display:block;margin-top:3px;color:#756d77;font-size:11px}
+.builderResultCard .bi .tag{margin-top:4px}
+.builderAdd{
+  border:0;border-radius:11px;background:#eadfe4;color:#8d4d59;
+  padding:9px 7px;font-size:11px;font-weight:950
+}
+.composedBox{
+  margin-top:12px!important;background:#f8f4f6!important;border:1px solid #dfd5db!important;
+  border-radius:14px!important;padding:10px 11px!important;display:grid!important;
+  grid-template-columns:1fr auto auto!important;gap:7px!important;align-items:center!important
+}
+.composedWord{
+  min-height:34px!important;font-size:29px!important;color:#2e2732!important;
+  white-space:nowrap!important;overflow-x:auto!important
+}
+.composedBox button{
+  border:0!important;border-radius:10px!important;background:#eee7eb!important;
+  padding:8px 9px!important;font-size:10px!important;font-weight:900!important
+}
+
 </style>
 </head><body>
 <div class="app">
@@ -482,22 +541,42 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
     <h3>문제 카드 추가</h3>
     <div class="field"><label>단어장</label><select id="vocabDeck"></select></div>
 
-    <div class="builderBox">
-      <div class="builderTitle">DB에서 한자 골라서 단어 만들기</div>
-      <div class="builderHelp">뜻·음·한자로 검색하고 글자를 누르면 아래 단어에 이어 붙어. 2음절 단어든 사자성어든 원하는 만큼 조합하면 돼.</div>
-      <div class="builderSearchRow">
-        <input id="builderQ" placeholder="예: 셈 / 수 / 數">
-        <button id="builderSearch" type="button">찾기</button>
-      </div>
-      <div id="builderResults" class="builderResults"></div>
-      <div class="composedBox">
-        <div id="composedWord" class="composedWord">아직 선택 없음</div>
-        <button id="builderBack" type="button">한 글자 지우기</button>
-        <button id="builderClear" type="button">초기화</button>
-      </div>
-    </div>
+    
+<div class="builderBox">
+  <div class="builderTitle">DB에서 한자 검색해서 단어 만들기</div>
+  <div class="builderHelp">메인 검색과 똑같이 뜻·음·한자로 찾고, 결과의 <b>추가</b>를 누르면 아래 단어에 이어 붙어.</div>
 
-    <div class="field"><label>문제/단어</label><input id="vocabPrompt" placeholder="DB에서 고르거나 직접 입력"></div>
+  <div class="builderSearchRow">
+    <input id="builderQ" placeholder="예: 어려울 / 간 / 艱">
+    <button id="builderSearch" type="button">검색</button>
+  </div>
+
+  <div class="builderFilters" id="builderGradeFilters">
+    <button type="button" class="builderFilter grade active" data-bgrade="all">전체</button>
+    <button type="button" class="builderFilter grade" data-bgrade="1">1급</button>
+    <button type="button" class="builderFilter grade" data-bgrade="2">2급</button>
+    <button type="button" class="builderFilter grade" data-bgrade="3">3급</button>
+  </div>
+
+  <div class="builderFilters" id="builderModeFilters">
+    <button type="button" class="builderFilter active" data-bmode="all">전체</button>
+    <button type="button" class="builderFilter" data-bmode="meaning">뜻</button>
+    <button type="button" class="builderFilter" data-bmode="reading">음</button>
+    <button type="button" class="builderFilter" data-bmode="char">한자</button>
+  </div>
+
+  <div id="builderResults" class="builderResultList">
+    <div style="font-size:11px;color:#8a8089;text-align:center;padding:14px 4px">검색 결과가 여기에 표시돼.</div>
+  </div>
+
+  <div class="composedBox">
+    <div id="composedWord" class="composedWord">아직 선택 없음</div>
+    <button id="builderBack" type="button">한 글자 지우기</button>
+    <button id="builderClear" type="button">초기화</button>
+  </div>
+</div>
+
+<div class="field"><label>문제/단어</label><input id="vocabPrompt" placeholder="DB에서 고르거나 직접 입력"></div>
     <div class="field"><label>정답</label><input id="vocabAnswer" placeholder="예: 삭뇨"></div>
     <div class="field"><label>메모</label><input id="vocabNote" placeholder="예: 數는 여기서 '삭'으로 발음"></div>
     <div class="sheetBtns">
@@ -603,13 +682,18 @@ function renderLibrary(){
 
 
 let builderChars=[];
+let builderMode='all';
+let builderGrade='all';
 
 function resetBuilder(){
   builderChars=[];
   const q=$('#builderQ'),res=$('#builderResults'),p=$('#vocabPrompt');
   if(q)q.value='';
-  if(res)res.innerHTML='';
+  if(res)res.innerHTML='<div style="font-size:11px;color:#8a8089;text-align:center;padding:14px 4px">검색 결과가 여기에 표시돼.</div>';
   if(p)p.value='';
+  builderMode='all';builderGrade='all';
+  document.querySelectorAll('#builderModeFilters .builderFilter').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('#builderGradeFilters .builderFilter').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderComposedWord();
 }
 function renderComposedWord(){
@@ -617,27 +701,45 @@ function renderComposedWord(){
   const word=builderChars.join('');
   if(el)el.textContent=word||'아직 선택 없음';
   const p=$('#vocabPrompt');
-  if(p&&word)p.value=word;
+  if(p)p.value=word;
+}
+function builderCandidates(){
+  if(builderGrade==='all')return ALL;
+  return LEVELS[builderGrade]||[];
 }
 function builderFind(){
   const input=$('#builderQ');
   const q=norm(input?input.value:'');
   const box=$('#builderResults');
   if(!box)return;
-  if(!q){box.innerHTML='';return}
-  const rows=[];
-  for(const ch of ALL){
-    const x=info(ch);
-    if(ch.includes(q)||norm(x.meaning).includes(q)||norm(x.reading).includes(q)){
-      rows.push({char:ch,...x});
-      if(rows.length>=30)break;
-    }
-  }
-  if(!rows.length){
-    box.innerHTML='<span style="font-size:11px;color:#8a7f87">검색 결과 없음</span>';
+  if(!q){
+    box.innerHTML='<div style="font-size:11px;color:#8a8089;text-align:center;padding:14px 4px">검색어를 입력해줘.</div>';
     return;
   }
-  box.innerHTML=rows.map(x=>`<button type="button" class="hanjaPick" data-pick-char="${x.char}"><b>${x.char}</b><small>${esc(x.meaning)} · ${esc(x.reading)}</small></button>`).join('');
+  const rows=[];
+  for(const ch of builderCandidates()){
+    const x=info(ch),m=norm(x.meaning),r=norm(x.reading);
+    const hit=builderMode==='char'?ch.includes(q)
+      :builderMode==='meaning'?m.includes(q)
+      :builderMode==='reading'?r.includes(q)
+      :(ch.includes(q)||m.includes(q)||r.includes(q));
+    if(hit)rows.push({char:ch,...x});
+    if(rows.length>=60)break;
+  }
+  if(!rows.length){
+    box.innerHTML='<div style="font-size:11px;color:#8a8089;text-align:center;padding:16px 4px">일치하는 한자가 없어.</div>';
+    return;
+  }
+  box.innerHTML=rows.map(x=>`
+    <div class="builderResultCard">
+      <div class="bc">${x.char}</div>
+      <div class="bi">
+        <b>${esc(x.meaning)}</b>
+        <small>음: ${esc(x.reading)}</small>
+        <span class="tag grade${x.grade}">${x.grade?x.grade+'급':'기타'}</span>
+      </div>
+      <button type="button" class="builderAdd" data-pick-char="${x.char}">추가</button>
+    </div>`).join('');
   box.querySelectorAll('[data-pick-char]').forEach(b=>{
     b.onclick=()=>{
       builderChars.push(b.dataset.pickChar);
@@ -651,6 +753,19 @@ function initBuilderUI(){
   if(q)q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();builderFind()}});
   if(back)back.onclick=()=>{builderChars.pop();renderComposedWord()};
   if(clear)clear.onclick=resetBuilder;
+
+  document.querySelectorAll('#builderModeFilters .builderFilter').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#builderModeFilters .builderFilter').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');builderMode=b.dataset.bmode;builderFind();
+    };
+  });
+  document.querySelectorAll('#builderGradeFilters .builderFilter').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#builderGradeFilters .builderFilter').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');builderGrade=b.dataset.bgrade;builderFind();
+    };
+  });
 }
 
 function saveDecks(){localStorage.setItem(DECK_KEY,JSON.stringify(decks));renderDeckHome()}
