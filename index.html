@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="조로아 한자장">
-<title>조로아 한자장 v4</title>
+<title>조로아 한자장 v5</title>
 <style>
 :root{--ink:#2e2732;--muted:#817985;--line:#e4dce4;--red:#d76470;--cyan:#22b7cf;--dark:#3a3240;--paper:#fffdf9}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -72,6 +72,10 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .deckTitleLine{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.deckTitleLine button{border:0;border-radius:10px;padding:7px 9px;background:#ece6e9;font-size:11px;font-weight:900}
 .deckTestCard{min-height:330px;border-radius:27px;background:#fff;box-shadow:0 10px 30px #392e3a13;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:25px;text-align:center}.deckPrompt{font-family:"Songti SC","STSong",serif;font-size:48px;font-weight:750;line-height:1.2}.deckTestAnswer{display:none;margin-top:20px}.deckTestAnswer.show{display:block}.deckTestAnswer b{font-size:24px;color:#a65360}.deckTestAnswer p{font-size:13px;color:#766e78;line-height:1.5}.deckProgress{display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#807782}
 .nav{grid-template-columns:repeat(4,1fr)}
+
+
+.modal{padding-top:env(safe-area-inset-top);z-index:100}
+.modal .sheet{position:relative;z-index:101;background:#fff;box-shadow:0 -14px 50px rgba(30,20,30,.22)}
 
 </style>
 </head><body>
@@ -178,6 +182,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 
 
 
+
 <div id="bankModal" class="modal">
   <div class="sheet bankSheet">
     <h3 id="bankTitle">문제은행 기록</h3>
@@ -188,7 +193,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
     <div class="bankGroup"><h4>같은 음 / 같은 음 한자어</h4><textarea id="bankSameSound" placeholder="예) 補塡-保全 보전"></textarea></div>
     <div class="bankGroup"><h4>비슷한 뜻 / 유의 한자</h4><textarea id="bankSimilar" placeholder="예) 焚 불사를 분 - 燒 불사를 소"></textarea></div>
     <div class="bankGroup"><h4>공통 한자 / 빈칸 답</h4><textarea id="bankCommon" placeholder="예) □巾·□羅 = 網 / 改過(遷)善"></textarea></div>
-    <div class="bankGroup"><h4>사자성어 / 성어 뜻</h4><textarea id="bankIdiom" placeholder="예) 殷鑑不遠 은감불원 : 다른 사람의 실수를 거울로 삼음"></textarea></div>
+    <div class="bankGroup"><h4>사자성어 / 성어 뜻</h4><textarea id="bankIdiom" placeholder="예) 殷鑑不遠 은감불원"></textarea></div>
     <div class="bankGroup"><h4>표기 오류 / 헷갈리는 답</h4><textarea id="bankSpelling" placeholder="예) 監示 → 監視 / 藉格證 → 資格證"></textarea></div>
     <div class="bankGroup"><h4>기타 기출 메모</h4><textarea id="bankEtc" placeholder="부수, 획수, 장문독해 답 등 자유롭게"></textarea></div>
 
@@ -197,20 +202,31 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
       <button id="bankSave" class="confirm">저장</button>
     </div>
   </div>
-
-<div id="deckModal" class="modal"><div class="sheet">
-  <h3>새 문제 단어장</h3>
-  <div class="field"><label>이름</label><input id="deckName" placeholder="예: 다르게 발음되는 한자"></div>
-  <div class="sheetBtns"><button id="deckCancel" class="cancel">취소</button><button id="deckSave" class="confirm">만들기</button></div>
 </div>
 
-<div id="vocabModal" class="modal"><div class="sheet">
-  <h3>문제 카드 추가</h3>
-  <div class="field"><label>단어장</label><select id="vocabDeck"></select></div>
-  <div class="field"><label>문제/단어</label><input id="vocabPrompt" placeholder="예: 數尿"></div>
-  <div class="field"><label>정답</label><input id="vocabAnswer" placeholder="예: 삭뇨"></div>
-  <div class="field"><label>메모</label><input id="vocabNote" placeholder="예: 數는 여기서 '삭'으로 발음"></div>
-  <div class="sheetBtns"><button id="vocabCancel" class="cancel">취소</button><button id="vocabSave" class="confirm">저장</button></div>
+<div id="deckModal" class="modal">
+  <div class="sheet">
+    <h3>새 문제 단어장</h3>
+    <div class="field"><label>이름</label><input id="deckName" placeholder="예: 다르게 발음되는 한자"></div>
+    <div class="sheetBtns">
+      <button id="deckCancel" class="cancel">취소</button>
+      <button id="deckSave" class="confirm">만들기</button>
+    </div>
+  </div>
+</div>
+
+<div id="vocabModal" class="modal">
+  <div class="sheet">
+    <h3>문제 카드 추가</h3>
+    <div class="field"><label>단어장</label><select id="vocabDeck"></select></div>
+    <div class="field"><label>문제/단어</label><input id="vocabPrompt" placeholder="예: 數尿"></div>
+    <div class="field"><label>정답</label><input id="vocabAnswer" placeholder="예: 삭뇨"></div>
+    <div class="field"><label>메모</label><input id="vocabNote" placeholder="예: 數는 여기서 '삭'으로 발음"></div>
+    <div class="sheetBtns">
+      <button id="vocabCancel" class="cancel">취소</button>
+      <button id="vocabSave" class="confirm">저장</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -227,6 +243,7 @@ let bookmarks=JSON.parse(localStorage.getItem(BOOKMARK_KEY)||'[]');
 let bank=JSON.parse(localStorage.getItem(BANK_KEY)||'{}');
 let decks=JSON.parse(localStorage.getItem(DECK_KEY)||'[]');
 let activeDeckId=null, deckQueue=[], deckSeen=[], deckCurrent=null;
+let pendingCardAfterDeck=false;
 let gradeFilter='all', mode='all', current=null, externalReady=false;
 let reviewQueue=[], reviewSeen=[], reviewStarted=false, reviewSource='all';
 let editingBankChar=null;
@@ -336,7 +353,12 @@ function createDeck(){
   if(input)input.value='';
   const modal=$('#deckModal'); if(modal)modal.classList.remove('show');
   toast('단어장을 만들었어');
-  openDeck(d.id);
+  if(pendingCardAfterDeck){
+    pendingCardAfterDeck=false;
+    setTimeout(()=>openVocabModal(d.id),60);
+  }else{
+    openDeck(d.id);
+  }
 }
 function deleteDeck(id){
   const d=getDeck(id);if(!d)return;
@@ -359,8 +381,10 @@ function showDeckHome(){
 }
 function openVocabModal(deckId){
   if(!decks.length){
-    const dm=$('#deckModal'); if(dm)dm.classList.add('show');
-    toast('먼저 단어장을 만들어줘');
+    pendingCardAfterDeck=true;
+    const dm=$('#deckModal');
+    if(dm)dm.classList.add('show');
+    toast('카드를 넣을 단어장을 먼저 만들어줘');
     return;
   }
   if(deckId && getDeck(deckId))activeDeckId=deckId;
@@ -609,7 +633,16 @@ if(b.dataset.page==='reviewPage'){
 
 
 
+
+function initModalBackdropClose(){
+  document.querySelectorAll('.modal').forEach(modal=>{
+    modal.addEventListener('click',e=>{
+      if(e.target===modal)modal.classList.remove('show');
+    });
+  });
+}
 function initDeckUI(){
+  initModalBackdropClose();
   const bind=(sel,fn)=>{const el=$(sel);if(el)el.onclick=fn};
 
   bind('#newDeckBtn',()=>$('#deckModal').classList.add('show'));
