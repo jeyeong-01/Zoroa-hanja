@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="조로아 한자장">
-<title>조로아 한자장 v12</title>
+<title>조로아 한자장 v13</title>
 <style>
 :root{--ink:#2e2732;--muted:#817985;--line:#e4dce4;--red:#d76470;--cyan:#22b7cf;--dark:#3a3240;--paper:#fffdf9}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -464,6 +464,83 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .deckCardTop h3{font-size:16px!important;letter-spacing:-.01em}
 .deckActions{display:grid!important;grid-template-columns:1fr 1fr 64px!important}
 
+
+/* v13 문제노트 보기 */
+.deckViewToggle{
+  display:flex;gap:7px;margin:8px 0 12px;
+}
+.deckViewToggle button{
+  flex:1;border:0;border-radius:12px;padding:9px 10px;
+  background:#eee8eb;color:#6f646f;font-size:11px;font-weight:950;
+}
+.deckViewToggle button.active{background:#433845;color:#fff}
+
+.problemNotebook{display:flex;flex-direction:column;gap:12px}
+.problemCard{
+  background:#fff;border:1px solid #e8dfe4;border-radius:18px;
+  padding:15px 14px;box-shadow:0 6px 20px rgba(57,42,53,.045)
+}
+.problemTop{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px
+}
+.problemNo{font-size:11px;color:#958a94;font-weight:950}
+.problemType{font-size:9px;font-weight:950;background:#f2e8ec;color:#935360;border-radius:999px;padding:4px 7px}
+.problemStem{
+  font-family:"Songti SC","STSong","Noto Serif CJK KR",serif;
+  font-size:21px;font-weight:750;line-height:1.55;color:#2f2832;
+  white-space:pre-wrap;word-break:break-word
+}
+.choiceList{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.choiceItem{
+  display:grid;grid-template-columns:28px 1fr;gap:7px;align-items:start;
+  padding:9px 10px;border:1px solid #ece4e8;border-radius:12px;background:#fcfafb
+}
+.choiceItem.correct{
+  border-color:#c78d99;background:#fff6f8
+}
+.choiceNum{
+  width:24px;height:24px;border-radius:50%;background:#eee7eb;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:950;color:#625861
+}
+.choiceItem.correct .choiceNum{background:#a85765;color:#fff}
+.choiceText{
+  font-family:"Songti SC","STSong","Noto Serif CJK KR",serif;
+  font-size:17px;line-height:1.45
+}
+.problemAnswerBox{
+  margin-top:11px;padding:9px 10px;border-radius:12px;background:#f7f1f4;
+  font-size:12px;line-height:1.5;color:#665b66
+}
+.problemAnswerBox b{color:#9b5360}
+.problemNote{
+  margin-top:7px;font-size:11px;color:#807681;white-space:pre-wrap;line-height:1.5
+}
+.problemActions{display:flex;justify-content:flex-end;margin-top:10px}
+.problemActions button{
+  border:0;border-radius:10px;background:#f1eaee;color:#9a5965;
+  padding:7px 10px;font-size:10px;font-weight:900
+}
+
+/* 객관식 편집 폼 */
+.mcqBox{
+  margin:12px 0;padding:12px;border:1px solid #eadfe5;border-radius:16px;background:#fbf8fa
+}
+.mcqBox h4{margin:0 0 8px;font-size:13px}
+.mcqRow{display:grid;grid-template-columns:34px 1fr;gap:7px;margin-top:7px;align-items:center}
+.mcqRow span{
+  width:28px;height:28px;border-radius:50%;background:#eee7eb;
+  display:flex;align-items:center;justify-content:center;font-weight:950;font-size:11px
+}
+.mcqRow input{
+  width:100%;border:1px solid #dcd2d8;border-radius:10px;padding:9px;background:#fff
+}
+.mcqAnswerRow{
+  display:grid;grid-template-columns:80px 1fr;gap:8px;align-items:center;margin-top:10px
+}
+.mcqAnswerRow select{
+  width:100%;border:1px solid #dcd2d8;border-radius:10px;padding:9px;background:#fff
+}
+
 </style>
 </head><body>
 <div class="app">
@@ -543,14 +620,24 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
   <div id="deckDetail" style="display:none">
     <div class="deckTitleLine"><div><h2 id="deckDetailTitle" style="margin:0;font-size:20px"></h2><small id="deckDetailCount"></small></div><button id="backDeckHome">← 단어장 목록</button></div>
     <div class="deckTopBtns"><button id="addHereBtn" class="primary">＋ 이 단어장에 카드 추가</button><button id="testHereBtn">▶ 테스트</button></div>
-    <div class="deckTableCaption"><b>저장한 항목</b><span>좌우로 밀어서 전체 열 보기</span></div><div id="vocabList"></div>
+    
+<div class="deckViewToggle">
+  <button id="viewNotebookBtn" class="active">문제노트 보기</button>
+  <button id="viewTableBtn">표 보기</button>
+</div>
+<div id="notebookList"></div>
+<div id="tableViewWrap" style="display:none">
+  <div class="deckTableCaption"><b>저장한 항목</b><span>좌우로 밀어서 전체 열 보기</span></div>
+  <div id="vocabList"></div>
+</div>
+
   </div>
 
   <div id="deckTest" style="display:none">
     <div class="deckTitleLine"><div><h2 id="deckTestTitle" style="margin:0;font-size:20px"></h2><small>한 회차 중복 출제 없음</small></div><button id="exitDeckTest">종료</button></div>
     <div class="deckProgress"><span id="deckTestProgress">0 / 0</span><b id="deckTestRemain">남은 0개</b></div>
     <div id="deckTestCard" class="deckTestCard">
-      <div id="deckCardType" class="typePill" style="margin-bottom:10px">자유 카드</div><div id="deckPrompt" class="deckPrompt">?</div>
+      <div id="deckCardType" class="typePill" style="margin-bottom:10px">자유 카드</div><div id="deckPrompt" class="deckPrompt">?</div><div id="deckTestChoices" class="choiceList" style="width:100%;margin-top:16px"></div>
       <div class="hint">답을 떠올린 뒤 정답 보기</div>
       <div id="deckTestAnswer" class="deckTestAnswer"><b id="deckAnswer"></b><p id="deckNote"></p></div>
     </div>
@@ -610,6 +697,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
     <div class="field"><label>문제 형식</label>
       <select id="vocabType">
         <option value="free">자유 카드</option>
+        <option value="mcq">객관식 문제</option>
         <option value="seagim">새김 방식(짜임)</option>
         <option value="differentReading">다르게 발음되는 한자어</option>
         <option value="sameMeaning">같은 뜻 한자</option>
@@ -662,6 +750,23 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 
 <div class="field"><label>문제/단어</label><input id="vocabPrompt" placeholder="DB에서 고르거나 직접 입력"></div>
     <div class="field"><label>정답</label><input id="vocabAnswer" placeholder="예: 삭뇨"></div>
+    
+    <div id="mcqFields" class="mcqBox" style="display:none">
+      <h4>객관식 보기</h4>
+      <div class="mcqRow"><span>①</span><input id="choice1" placeholder="보기 1"></div>
+      <div class="mcqRow"><span>②</span><input id="choice2" placeholder="보기 2"></div>
+      <div class="mcqRow"><span>③</span><input id="choice3" placeholder="보기 3"></div>
+      <div class="mcqRow"><span>④</span><input id="choice4" placeholder="보기 4"></div>
+      <div class="mcqRow"><span>⑤</span><input id="choice5" placeholder="보기 5"></div>
+      <div class="mcqAnswerRow">
+        <b>정답 번호</b>
+        <select id="choiceAnswer">
+          <option value="1">①</option><option value="2">②</option><option value="3">③</option>
+          <option value="4">④</option><option value="5">⑤</option>
+        </select>
+      </div>
+    </div>
+
     <div class="field"><label>메모</label><input id="vocabNote" placeholder="예: 數는 여기서 '삭'으로 발음"></div>
     <div class="sheetBtns">
       <button id="vocabCancel" class="cancel">취소</button>
@@ -911,6 +1016,7 @@ function initBuilderUI(){
 
 const CARD_TYPE_LABELS={
   free:'자유 카드',
+  mcq:'객관식 문제',
   seagim:'새김 방식(짜임)',
   differentReading:'다르게 발음되는 한자어',
   sameMeaning:'같은 뜻 한자',
@@ -924,6 +1030,7 @@ const CARD_TYPE_LABELS={
 };
 const CARD_TYPE_HINTS={
   free:'문제와 정답을 자유롭게 저장',
+  mcq:'문제문장과 ①~⑤ 보기, 정답 번호까지 시험 문제 그대로 저장',
   seagim:'문제 한자어 → 같은 새김 방식의 정답 짝',
   differentReading:'한자어 → 시험에서 읽는 독음',
   sameMeaning:'기준 한자 → 같은 뜻 한자',
@@ -942,6 +1049,7 @@ function updateCardTypeUI(){
   if(!s||!p||!a)return;
   const map={
     free:['문제/단어','정답'],
+    mcq:['문제문장','정답/해설'],
     seagim:['문제 한자어','정답 짝'],
     differentReading:['한자어','정답 독음'],
     sameMeaning:['기준 한자','같은 뜻 한자'],
@@ -954,6 +1062,7 @@ function updateCardTypeUI(){
     typo:['독음/틀린 표기','올바른 표기']
   };
   const pair=map[s.value]||map.free;
+  const mcq=$('#mcqFields');if(mcq)mcq.style.display=(s.value==='mcq'?'block':'none');
   const pf=p.closest('.field'), af=a.closest('.field');
   if(pf){const l=pf.querySelector('label');if(l)l.textContent=pair[0]}
   if(af){const l=af.querySelector('label');if(l)l.textContent=pair[1]}
@@ -1021,6 +1130,7 @@ function openDeck(id){
   const d=getDeck(id);if(!d)return;
   activeDeckId=id;
   $('#deckHome').style.display='none';$('#deckTest').style.display='none';$('#deckDetail').style.display='block';
+  setDeckView('notebook');
   $('#deckDetailTitle').textContent=d.name;
   $('#deckDetailCount').textContent=(d.cards||[]).length+'개 카드';
   renderVocabList();fillDeckSelect();
@@ -1045,6 +1155,8 @@ function openVocabModal(deckId){
   const vt=$('#vocabType');if(vt){vt.value='free';updateCardTypeUI();}
   const p=$('#vocabPrompt'),a=$('#vocabAnswer'),n=$('#vocabNote');
   if(p)p.value='';if(a)a.value='';if(n)n.value='';
+  [1,2,3,4,5].forEach(i=>{const e=$('#choice'+i);if(e)e.value='';});
+  const ca=$('#choiceAnswer');if(ca)ca.value='1';
   const vm=$('#vocabModal'); if(vm)vm.classList.add('show');
 }
 function addVocabCard(){
@@ -1054,18 +1166,61 @@ function addVocabCard(){
   const p=$('#vocabPrompt'),a=$('#vocabAnswer'),n=$('#vocabNote'),t=$('#vocabType');
   const prompt=p?p.value.trim():'', answer=a?a.value.trim():'', note=n?n.value.trim():'', type=t?t.value:'free';
   if(!d){toast('단어장을 선택해줘');return}
-  if(!prompt||!answer){toast('문제와 정답을 입력해줘');return}
+  if(!prompt){toast('문제를 입력해줘');return}
+  const choices=[1,2,3,4,5].map(i=>{const el=$('#choice'+i);return el?el.value.trim():''});
+  const correctChoice=Number(($('#choiceAnswer')||{}).value||1);
+  if(type==='mcq' && choices.filter(Boolean).length<2){toast('객관식 보기를 최소 2개 입력해줘');return}
+  if(type!=='mcq' && !answer){toast('정답을 입력해줘');return}
   d.cards=d.cards||[];
-  d.cards.push({id:makeId(),type:type,prompt:prompt,answer:answer,note:note,createdAt:Date.now()});
+  d.cards.push({
+    id:makeId(),type:type,prompt:prompt,answer:answer,note:note,
+    choices:type==='mcq'?choices:[],correctChoice:type==='mcq'?correctChoice:null,
+    createdAt:Date.now()
+  });
   activeDeckId=id;
   saveDecks();
   const vm=$('#vocabModal');if(vm)vm.classList.remove('show');
   openDeck(id);
   toast('카드를 저장했어');
 }
+
+function renderNotebook(){
+  const d=getDeck(activeDeckId),box=$('#notebookList');if(!d||!box)return;
+  const cards=d.cards||[];
+  if(!cards.length){
+    box.innerHTML='<div class="empty">아직 저장한 문제가 없어.<br>객관식·빈칸·상대어 문제를 그대로 저장해봐.</div>';
+    return;
+  }
+  const circ=['','①','②','③','④','⑤'];
+  box.innerHTML=`<div class="problemNotebook">${cards.map((c,i)=>{
+    const isMcq=c.type==='mcq' && Array.isArray(c.choices);
+    const choices=isMcq?c.choices:[];
+    return `<div class="problemCard">
+      <div class="problemTop">
+        <span class="problemNo">${i+1}번</span>
+        <span class="problemType">${esc(CARD_TYPE_LABELS[c.type||'free']||'자유 카드')}</span>
+      </div>
+      <div class="problemStem">${esc(c.prompt)}</div>
+      ${isMcq?`<div class="choiceList">${
+        choices.map((x,ci)=>x?`<div class="choiceItem ${Number(c.correctChoice)===ci+1?'correct':''}">
+          <div class="choiceNum">${circ[ci+1]}</div>
+          <div class="choiceText">${esc(x)}</div>
+        </div>`:'').join('')
+      }</div>`:''}
+      <div class="problemAnswerBox"><b>정답</b> ${
+        isMcq?(circ[Number(c.correctChoice)||1]+' '+esc(choices[(Number(c.correctChoice)||1)-1]||'')):esc(c.answer||'')
+      }</div>
+      ${c.note?`<div class="problemNote">${esc(c.note)}</div>`:''}
+      <div class="problemActions"><button data-del-card="${c.id}">삭제</button></div>
+    </div>`;
+  }).join('')}</div>`;
+  box.querySelectorAll('[data-del-card]').forEach(b=>b.onclick=()=>deleteVocabCard(b.dataset.delCard));
+}
+
 function renderVocabList(){
   const d=getDeck(activeDeckId), box=$('#vocabList');if(!d||!box)return;
   const cards=d.cards||[];
+  renderNotebook();
   $('#deckDetailCount').textContent=cards.length+'개 항목';
   if(!cards.length){
     box.innerHTML='<div class="empty">아직 저장한 항목이 없어.<br>예: <b>數尿 → 삭뇨</b>처럼 추가해봐.</div>';
@@ -1127,7 +1282,19 @@ function nextDeckCard(){
   deckCurrent=deckQueue.shift();deckSeen.push(deckCurrent.id);
   $('#deckCardType').textContent=CARD_TYPE_LABELS[deckCurrent.type||'free']||'자유 카드';
   $('#deckPrompt').textContent=deckCurrent.prompt;
-  $('#deckAnswer').textContent=deckCurrent.answer;
+  const testChoices=$('#deckTestChoices');
+  if(testChoices){
+    if(deckCurrent.type==='mcq'&&Array.isArray(deckCurrent.choices)){
+      const circ=['','①','②','③','④','⑤'];
+      testChoices.innerHTML=deckCurrent.choices.map((x,i)=>x?`<div class="choiceItem"><div class="choiceNum">${circ[i+1]}</div><div class="choiceText">${esc(x)}</div></div>`:'').join('');
+    }else testChoices.innerHTML='';
+  }
+  if(deckCurrent.type==='mcq'&&Array.isArray(deckCurrent.choices)){
+    const n=Number(deckCurrent.correctChoice)||1;
+    $('#deckAnswer').textContent=['','①','②','③','④','⑤'][n]+' '+(deckCurrent.choices[n-1]||'');
+  }else{
+    $('#deckAnswer').textContent=deckCurrent.answer;
+  }
   $('#deckNote').textContent=deckCurrent.note||'';
   updateDeckProgress();
 }
@@ -1323,8 +1490,21 @@ function initModalBackdropClose(){
     });
   });
 }
+
+function setDeckView(mode){
+  const nb=$('#notebookList'),tw=$('#tableViewWrap');
+  const b1=$('#viewNotebookBtn'),b2=$('#viewTableBtn');
+  if(nb)nb.style.display=mode==='notebook'?'block':'none';
+  if(tw)tw.style.display=mode==='table'?'block':'none';
+  if(b1)b1.classList.toggle('active',mode==='notebook');
+  if(b2)b2.classList.toggle('active',mode==='table');
+}
+
 function initDeckUI(){
   initModalBackdropClose();
+  const vn=$('#viewNotebookBtn'),vt=$('#viewTableBtn');
+  if(vn)vn.onclick=()=>setDeckView('notebook');
+  if(vt)vt.onclick=()=>setDeckView('table');
   initBuilderUI();
   const bind=(sel,fn)=>{const el=$(sel);if(el)el.onclick=fn};
 
