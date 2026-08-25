@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="조로아 한자장">
-<title>조로아 한자장 v11</title>
+<title>조로아 한자장 v12</title>
 <style>
 :root{--ink:#2e2732;--muted:#817985;--line:#e4dce4;--red:#d76470;--cyan:#22b7cf;--dark:#3a3240;--paper:#fffdf9}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -405,6 +405,65 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .examProblemCard button{margin-top:7px;border:0;border-radius:10px;background:#423743;color:#fff;padding:8px 10px;font-size:11px;font-weight:900}
 .typePill{display:inline-block;font-size:9px;font-weight:900;background:#f0e9ed;color:#845865;border-radius:999px;padding:3px 6px;margin-bottom:4px}
 
+
+/* v12 단어장 상세: 엑셀식 표 보기 */
+.deckTableWrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid #e7dde3;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 6px 20px rgba(57,42,53,.04);
+}
+.deckTable{
+  width:100%;
+  min-width:620px;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:fixed;
+}
+.deckTable th{
+  position:sticky;top:0;z-index:2;
+  background:#f4eef1;color:#5f535f;
+  font-size:11px;font-weight:950;text-align:left;
+  padding:11px 10px;border-bottom:1px solid #ded3da;
+}
+.deckTable th:first-child{width:44px;text-align:center}
+.deckTable th:nth-child(2){width:180px}
+.deckTable th:nth-child(3){width:150px}
+.deckTable th:nth-child(4){width:110px}
+.deckTable th:nth-child(5){width:180px}
+.deckTable th:last-child{width:46px;text-align:center}
+.deckTable td{
+  padding:11px 10px;border-bottom:1px solid #eee7eb;
+  vertical-align:top;font-size:12px;line-height:1.45;background:#fff;
+}
+.deckTable tr:last-child td{border-bottom:0}
+.deckTable tbody tr:nth-child(even) td{background:#fcfafb}
+.deckTable .rowNum{text-align:center;color:#9a909a;font-size:10px;font-weight:900}
+.deckTable .qCell{
+  font-family:"Songti SC","STSong","Noto Serif CJK KR",serif;
+  font-size:20px;font-weight:750;color:#302833;word-break:break-all;
+}
+.deckTable .aCell{font-size:14px;font-weight:900;color:#9b5360;word-break:break-word}
+.deckTable .typeCell .typePill{margin:0;font-size:9px}
+.deckTable .noteCell{color:#7b727c;font-size:11px;white-space:pre-wrap}
+.deckTable .delCell{text-align:center}
+.deckTable .delCell button{
+  width:30px;height:30px;border:0;border-radius:50%;
+  background:#f2ecef;color:#a05b66;font-size:16px;font-weight:900
+}
+.deckTableCaption{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:0 0 8px;padding:0 2px;color:#827884;font-size:11px;
+}
+.deckTableCaption b{color:#4a3f49;font-size:12px}
+#deckDetail .deckTopBtns{margin-bottom:12px!important}
+.deckCard{border-radius:15px!important;padding:13px 14px!important}
+.deckCardTop h3{font-size:16px!important;letter-spacing:-.01em}
+.deckActions{display:grid!important;grid-template-columns:1fr 1fr 64px!important}
+
 </style>
 </head><body>
 <div class="app">
@@ -484,7 +543,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
   <div id="deckDetail" style="display:none">
     <div class="deckTitleLine"><div><h2 id="deckDetailTitle" style="margin:0;font-size:20px"></h2><small id="deckDetailCount"></small></div><button id="backDeckHome">← 단어장 목록</button></div>
     <div class="deckTopBtns"><button id="addHereBtn" class="primary">＋ 이 단어장에 카드 추가</button><button id="testHereBtn">▶ 테스트</button></div>
-    <div id="vocabList" class="list"></div>
+    <div class="deckTableCaption"><b>저장한 항목</b><span>좌우로 밀어서 전체 열 보기</span></div><div id="vocabList"></div>
   </div>
 
   <div id="deckTest" style="display:none">
@@ -1007,9 +1066,38 @@ function addVocabCard(){
 function renderVocabList(){
   const d=getDeck(activeDeckId), box=$('#vocabList');if(!d||!box)return;
   const cards=d.cards||[];
-  $('#deckDetailCount').textContent=cards.length+'개 카드';
-  if(!cards.length){box.innerHTML='<div class="empty">아직 카드가 없어.<br>예: <b>數尿 → 삭뇨</b>를 추가해봐.</div>';return}
-  box.innerHTML=cards.map(c=>`<div class="vocabRow"><div><span class="typePill">${esc(CARD_TYPE_LABELS[c.type||'free']||'자유 카드')}</span><div class="vocabWord">${esc(c.prompt)}</div>${c.note?`<div class="vocabNote">${esc(c.note)}</div>`:''}</div><div class="vocabAnswer">${esc(c.answer)}</div><button data-del-card="${c.id}">×</button></div>`).join('');
+  $('#deckDetailCount').textContent=cards.length+'개 항목';
+  if(!cards.length){
+    box.innerHTML='<div class="empty">아직 저장한 항목이 없어.<br>예: <b>數尿 → 삭뇨</b>처럼 추가해봐.</div>';
+    return;
+  }
+  box.innerHTML=`
+    <div class="deckTableWrap">
+      <table class="deckTable">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>문제 / 한자어</th>
+            <th>정답 / 독음</th>
+            <th>문제 유형</th>
+            <th>메모</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${cards.map((c,i)=>`
+            <tr>
+              <td class="rowNum">${i+1}</td>
+              <td class="qCell">${esc(c.prompt)}</td>
+              <td class="aCell">${esc(c.answer)}</td>
+              <td class="typeCell"><span class="typePill">${esc(CARD_TYPE_LABELS[c.type||'free']||'자유 카드')}</span></td>
+              <td class="noteCell">${esc(c.note||'')}</td>
+              <td class="delCell"><button data-del-card="${c.id}" aria-label="삭제">×</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
   document.querySelectorAll('[data-del-card]').forEach(b=>b.onclick=()=>deleteVocabCard(b.dataset.delCard));
 }
 function deleteVocabCard(cardId){
